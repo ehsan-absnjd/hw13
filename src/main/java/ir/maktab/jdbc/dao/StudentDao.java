@@ -43,7 +43,7 @@ public class StudentDao implements BaseDao<Student, Integer> {
             resultSet.close();
         }catch (SQLException e){
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("Can not insert student " + entity + " into database.");
         }
         for (Course course : entity.getCourses()){
             try(PreparedStatement ps = statementForVarArgs(MIDDLE_TABLE_QUERY ,
@@ -51,7 +51,7 @@ public class StudentDao implements BaseDao<Student, Integer> {
                 ps.executeUpdate();
             }catch (SQLException e){
                 e.printStackTrace();
-                throw new ModificationDataException("Can not update data to db");
+                throw new ModificationDataException("Can not insert student course data to db.");
             }
         }
 
@@ -68,20 +68,20 @@ public class StudentDao implements BaseDao<Student, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("Can not update student " + newEntity + " into database.");
         }
         try ( PreparedStatement ps = statementForVarArgs(MIDDLE_TABLE_DELETE , id )){
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("Can not delete previous courses for student " + newEntity);
         }
         for (Course course : newEntity.getCourses()){
             try(PreparedStatement ps = statementForVarArgs(MIDDLE_TABLE_QUERY ,id , course.getId() )){
                 ps.executeUpdate();
             }catch (SQLException e) {
                 e.printStackTrace();
-                throw new ModificationDataException("Can not update data to db");
+                throw new ModificationDataException("Can not insert new courses for student " + newEntity);
             }
         }
 
@@ -94,7 +94,7 @@ public class StudentDao implements BaseDao<Student, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("can not delete student with id: " + id);
         }
     }
 
@@ -118,10 +118,10 @@ public class StudentDao implements BaseDao<Student, Integer> {
                 }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding student with id: " + id);
         }
         if (student==null){
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("Can not find student with id: " + id);
         }else {
             return student;
         }
@@ -145,16 +145,16 @@ public class StudentDao implements BaseDao<Student, Integer> {
                     student.setCourses(courseSet);
                 }catch (SQLException e) {
                     e.printStackTrace();
-                    throw new DataNotFoundException("Can not find data from db");
+                    throw new DataNotFoundException("error happened while finding students.");
                 }
                 students.add(student);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding students.");
         }
         if (students.isEmpty()){
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("Can not find any students.");
         }else {
             return students;
         }
@@ -175,12 +175,19 @@ public class StudentDao implements BaseDao<Student, Integer> {
         return student;
     }
 
+    @Override
     public void startTransaction() throws SQLException {
         connection.setAutoCommit(false);
     }
 
+    @Override
     public void commit() throws SQLException {
         connection.commit();
+    }
+
+    @Override
+    public void rollBack() throws SQLException {
+        connection.rollback();
     }
 
     private PreparedStatement statementForVarArgs(String query, Object... params){

@@ -14,4 +14,8 @@ public interface BaseDao<T extends BaseEntity<ID>, ID extends Number> {
     T loadById(ID id);
     List<T> loadAll();
     T entityByResultset(ResultSet resultSet) throws SQLException;
+    void startTransaction() throws SQLException;
+    void commit() throws SQLException;
+
+    void rollBack() throws SQLException;
 }

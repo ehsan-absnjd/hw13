@@ -32,7 +32,7 @@ public class MajorDao implements BaseDao<Major, Integer> {
             ps.executeUpdate();
         }catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not insert data to db");
+            throw new ModificationDataException("Can not insert major " + entity + " into database.");
         }
 
 
@@ -45,7 +45,7 @@ public class MajorDao implements BaseDao<Major, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("Can not update major " + newEntity + " into database.");
         }
     }
 
@@ -56,7 +56,7 @@ public class MajorDao implements BaseDao<Major, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("can not delete major with id: " + id);
         }
 
     }
@@ -72,10 +72,10 @@ public class MajorDao implements BaseDao<Major, Integer> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding major with id: " + id);
         }
         if(major==null){
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("Can not find major with id: " + id);
         }else {
             return major;
         }
@@ -92,10 +92,10 @@ public class MajorDao implements BaseDao<Major, Integer> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding majors.");
         }
         if (majors.isEmpty()){
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("Can not find any majors.");
         }else {
             return majors;
         }
@@ -108,13 +108,19 @@ public class MajorDao implements BaseDao<Major, Integer> {
         return new Major(majorId , name );
     }
 
-
+    @Override
     public void startTransaction() throws SQLException {
         connection.setAutoCommit(false);
     }
 
+    @Override
     public void commit() throws SQLException {
         connection.commit();
+    }
+
+    @Override
+    public void rollBack() throws SQLException {
+        connection.rollback();
     }
 
 

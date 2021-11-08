@@ -34,7 +34,7 @@ public class CourseDao implements BaseDao<Course, Integer> {
             ps.executeUpdate();
         }catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not insert data to db");
+            throw new ModificationDataException("Can not insert course " + entity + " into database.");
         }
 
 
@@ -48,7 +48,7 @@ public class CourseDao implements BaseDao<Course, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("Can not update course " + newEntity + " into database.");
         }
     }
 
@@ -59,7 +59,7 @@ public class CourseDao implements BaseDao<Course, Integer> {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new ModificationDataException("Can not update data to db");
+            throw new ModificationDataException("can not delete course with id: " + id);
         }
     }
 
@@ -74,10 +74,10 @@ public class CourseDao implements BaseDao<Course, Integer> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding course with id: " + id);
         }
         if(course==null){
-            throw  new DataNotFoundException("Can not find data from db");
+            throw  new DataNotFoundException("Can not find course with id: " + id);
         }else{
             return course;
         }
@@ -94,10 +94,10 @@ public class CourseDao implements BaseDao<Course, Integer> {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("error happened while finding courses.");
         }
         if(courses.isEmpty()){
-            throw new DataNotFoundException("Can not find data from db");
+            throw new DataNotFoundException("Can not find any courses.");
         }else {
             return courses;
         }
@@ -111,13 +111,17 @@ public class CourseDao implements BaseDao<Course, Integer> {
         return new Course(courseId,name,unit);
     }
 
-
+    @Override
     public void startTransaction() throws SQLException {
         connection.setAutoCommit(false);
     }
-
+    @Override
     public void commit() throws SQLException {
         connection.commit();
+    }
+    @Override
+    public void rollBack() throws SQLException {
+        connection.rollback();
     }
 
 
