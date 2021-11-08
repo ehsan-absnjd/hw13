@@ -28,7 +28,6 @@ public class MajorDao implements BaseDao<Major, Integer> {
     @Override
     public void save(Major entity) {
         final String QUERY = "INSERT INTO majors (name) VALUES(?)";
-
         try (PreparedStatement ps = statementForVarArgs(QUERY , entity.getName() )) {
             ps.executeUpdate();
         }catch (SQLException e) {
@@ -65,33 +64,40 @@ public class MajorDao implements BaseDao<Major, Integer> {
     @Override
     public Major loadById(Integer id) {
         final String QUERY ="SELECT * FROM majors WHERE id = ?";
-        try (PreparedStatement ps = statementForVarArgs(QUERY,id)){
-            try (ResultSet resultSet = ps.executeQuery()) {
-                Major major = null;
-                while (resultSet.next()) {
-                    major= entityByResultset(resultSet);
-                }
-                return major;
+        Major major = null;
+        try (PreparedStatement ps = statementForVarArgs(QUERY,id);
+             ResultSet resultSet = ps.executeQuery()){
+            if (resultSet.next()) {
+                major= entityByResultset(resultSet);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if(major==null){
+            throw new DataNotFoundException("Can not find data from db");
+        }else {
+            return major;
         }
     }
 
     @Override
     public List<Major> loadAll() {
         final String QUERY ="SELECT * FROM majors";
+        List<Major> majors = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(QUERY);
-             ResultSet resultSet = ps.executeQuery();){
-            List<Major> majors = new ArrayList<>();
+            ResultSet resultSet = ps.executeQuery()){
             while (resultSet.next()) {
                 majors.add( entityByResultset(resultSet));
             }
-            return majors;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if (majors.isEmpty()){
+            throw new DataNotFoundException("Can not find data from db");
+        }else {
+            return majors;
         }
     }
 

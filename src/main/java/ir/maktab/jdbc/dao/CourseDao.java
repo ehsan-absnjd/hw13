@@ -66,33 +66,40 @@ public class CourseDao implements BaseDao<Course, Integer> {
     @Override
     public Course loadById(Integer id) {
         final String QUERY ="SELECT * FROM courses WHERE id = ?";
-        try (PreparedStatement ps = statementForVarArgs(QUERY,id)){
-            try (ResultSet resultSet = ps.executeQuery()) {
-                Course course = null;
-                while (resultSet.next()) {
-                    course = entityByResultset(resultSet);
-                }
-                return course;
+        Course course = null;
+        try (PreparedStatement ps = statementForVarArgs(QUERY,id);
+            ResultSet resultSet = ps.executeQuery()){
+            if (resultSet.next()) {
+                course = entityByResultset(resultSet);
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if(course==null){
+            throw  new DataNotFoundException("Can not find data from db");
+        }else{
+            return course;
         }
     }
 
     @Override
     public List<Course> loadAll() {
         final String QUERY ="SELECT * FROM courses";
+        List<Course> courses = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(QUERY);
-            ResultSet resultSet = ps.executeQuery();){
-            List<Course> courses = new ArrayList<>();
+            ResultSet resultSet = ps.executeQuery()){
             while (resultSet.next()) {
-                courses.add( entityByResultset(resultSet));
+                courses.add(entityByResultset(resultSet));
             }
-            return courses;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if(courses.isEmpty()){
+            throw new DataNotFoundException("Can not find data from db");
+        }else {
+            return courses;
         }
     }
 

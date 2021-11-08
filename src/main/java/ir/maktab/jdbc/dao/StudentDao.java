@@ -33,7 +33,6 @@ public class StudentDao implements BaseDao<Student, Integer> {
         final String QUERY = "INSERT INTO students (name, family_name, major_id) VALUES(?, ?, ?)";
         final String MIDDLE_TABLE_QUERY = "INSERT INTO students_courses (student_id , course_id) " +
                 "values(? , ?)";
-
         int studentId;
         try (PreparedStatement ps = statementForVarArgs(QUERY , entity.getName() ,
                 entity.getFamilyName() , entity.getMajor().getId()) ) {
@@ -103,12 +102,12 @@ public class StudentDao implements BaseDao<Student, Integer> {
     public Student loadById(Integer id) {
         final String QUERY ="SELECT * FROM students WHERE id = ?";
         final String MIDDLE_TABLE_QUERY = "SELECT course_id FROM students_courses WHERE student_id = ?";
+        Student student = null;
         try (
              PreparedStatement ps = statementForVarArgs(QUERY,id);
-             PreparedStatement courses = statementForVarArgs(MIDDLE_TABLE_QUERY , id)){
-            try (ResultSet resultSet = ps.executeQuery();
-            ResultSet courseResults = courses.executeQuery()) {
-                Student student = null;
+             PreparedStatement courses = statementForVarArgs(MIDDLE_TABLE_QUERY , id);
+             ResultSet resultSet = ps.executeQuery();
+             ResultSet courseResults = courses.executeQuery()){
                 if (resultSet.next()) {
                    student = entityByResultset(resultSet);
                    Set<Course> courseSet = new HashSet<>();
@@ -117,11 +116,14 @@ public class StudentDao implements BaseDao<Student, Integer> {
                    }
                    student.setCourses(courseSet);
                 }
-                return student;
-            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if (student==null){
+            throw new DataNotFoundException("Can not find data from db");
+        }else {
+            return student;
         }
     }
 
@@ -129,9 +131,9 @@ public class StudentDao implements BaseDao<Student, Integer> {
     public List<Student> loadAll() {
         final String QUERY ="SELECT * FROM students";
         final String MIDDLE_TABLE_QUERY = "SELECT course_id FROM students_courses WHERE student_id = ?";
+        List<Student> students = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(QUERY);
-             ResultSet resultSet = ps.executeQuery();){
-            List<Student> students = new ArrayList<>();
+            ResultSet resultSet = ps.executeQuery();){
             while (resultSet.next()) {
                 Student student = entityByResultset(resultSet);
                 try (PreparedStatement courseStatement = statementForVarArgs(MIDDLE_TABLE_QUERY , student.getId());
@@ -147,10 +149,14 @@ public class StudentDao implements BaseDao<Student, Integer> {
                 }
                 students.add(student);
             }
-            return students;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataNotFoundException("Can not find data from db");
+        }
+        if (students.isEmpty()){
+            throw new DataNotFoundException("Can not find data from db");
+        }else {
+            return students;
         }
     }
 
